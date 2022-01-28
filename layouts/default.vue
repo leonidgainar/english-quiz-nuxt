@@ -52,7 +52,7 @@ export default {
         },
         {
           icon: 'mdi-lightbulb-on-outline',
-          title: 'Past participate quiz',
+          title: 'Past participle quiz',
           to: '/quiz/2',
         },
       ],

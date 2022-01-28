@@ -38,7 +38,7 @@ export default {
         },
         { text: 'Translation', value: 'translation', sortable: false },
         { text: 'Past simple', value: 'pastSimple' },
-        { text: 'Past participate', value: 'pastParticipate' },
+        { text: 'Past participle', value: 'pastParticiple' },
       ],
       items: irregularVerbs,
     }

@@ -35,7 +35,7 @@ export default {
         quizName = 'Past Simple'
       }
       if (this.id === '2') {
-        quizName = 'Past Participate'
+        quizName = 'Past Participle'
       }
       return quizName
     },
@@ -51,10 +51,10 @@ export default {
         })
       }
       if (this.id === '2') {
-        verbs = irregularVerbs.map(({ infinitive, pastParticipate }) => {
+        verbs = irregularVerbs.map(({ infinitive, pastParticiple }) => {
           return {
             infinitive,
-            correctAnswer: pastParticipate,
+            correctAnswer: pastParticiple,
           }
         })
       }
