@@ -4,7 +4,7 @@
       <h1>Welcome to {{ quizName }} Quiz!</h1>
       <v-select
         v-model.trim="numberOfVerbs"
-        :items="[5, 10, 20, 30, 40, 50]"
+        :items="[5, 10, 20, 30, 40, 50, 'All']"
         label="Select number of questions"
       ></v-select>
       <v-btn color="primary" :disabled="!numberOfVerbs" @click="startQuiz">
@@ -13,9 +13,12 @@
     </div>
 
     <div v-if="quizIsStarted && !quizIsFinished">
-      <h1>Type the past simple form of the verb:</h1>
+      <h2>
+        {{ currentIndex + 1 }}/{{ numberOfVerbs }}
+        Past Simple form of the verb:
+      </h2>
       <h2 class="pt-5">
-        #{{ currentIndex + 1 }}. {{ selectedVerbs[currentIndex].infinitive }}
+        {{ selectedVerbs[currentIndex].infinitive }}
       </h2>
       <v-form @submit.prevent="nextQuestion">
         <v-text-field
@@ -44,7 +47,9 @@
             <tr v-for="verb in selectedVerbs" :key="verb.infinitive">
               <td>{{ verb.infinitive }}</td>
               <td>{{ verb.correctAnswer }}</td>
-              <td>{{ verb.yourAnswer }}</td>
+              <td :class="verb.isCorrect ? 'green--text' : 'red--text'">
+                {{ verb.yourAnswer }}
+              </td>
             </tr>
           </tbody>
         </template>
@@ -112,7 +117,10 @@ export default {
   methods: {
     startQuiz() {
       this.quizIsStarted = true
-
+      this.numberOfVerbs =
+        this.numberOfVerbs === 'All'
+          ? irregularVerbs.length
+          : this.numberOfVerbs
       this.selectedVerbs = this.verbs
         .sort(() => Math.random() - Math.random())
         .slice(0, this.numberOfVerbs)
@@ -135,9 +143,14 @@ export default {
         this.selectedVerbs[this.currentIndex].correctAnswer.split('/')
       if (
         correctAnswers[0] === this.currentAnswer ||
-        correctAnswers[1] === this.currentAnswer
+        correctAnswers[1] === this.currentAnswer ||
+        this.selectedVerbs[this.currentIndex].correctAnswer ===
+          this.currentAnswer
       ) {
+        this.selectedVerbs[this.currentIndex].isCorrect = true
         this.score++
+      } else {
+        this.selectedVerbs[this.currentIndex].isCorrect = false
       }
     },
 
