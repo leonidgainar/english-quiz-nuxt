@@ -22,8 +22,8 @@
 
 <script>
 import irregularVerbs from '@/static/irregularVerbs.json'
+
 export default {
-  name: 'IndexPage',
   data() {
     return {
       search: '',
