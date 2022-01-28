@@ -1,4 +1,6 @@
-# english-quiz
+# english-quiz-nuxt
+
+## Live demo [here](https://english-quiz-nuxt.netlify.app)
 
 ## Build Setup
 

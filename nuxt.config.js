@@ -4,8 +4,8 @@ export default {
   target: 'static',
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: '%s - english-quiz',
-    title: 'english-quiz',
+    titleTemplate: '%s',
+    title: 'english-quiz-nuxt',
     htmlAttrs: {
       lang: 'en',
     },
