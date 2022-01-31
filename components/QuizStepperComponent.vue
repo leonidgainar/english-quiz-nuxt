@@ -18,9 +18,10 @@
           <h1>Welcome to {{ quizName }} Quiz!</h1>
           <v-select
             v-model.trim="numberOfQuestions"
-            :items="[5, 10, 20, 30, 40, 50, 'All']"
+            :items="[5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 'All']"
             label="Select number of questions"
           ></v-select>
+          <v-switch v-model="shuffleMode" label="Shuffle mode"></v-switch>
           <v-btn
             color="primary"
             :disabled="!numberOfQuestions"
@@ -28,11 +29,16 @@
           >
             Start quiz
           </v-btn>
+          <v-alert class="mt-10" type="info">
+            Switch off shuffle mode if you want the verbs in the quiz to be in
+            alphabetical order
+          </v-alert>
         </div>
       </v-stepper-content>
 
       <v-stepper-content step="2">
         <div v-if="step === 2">
+          <StopwatchComponent @timer-changed="onTimerChanged" />
           <h2>
             {{ currentIndex + 1 }}/{{ numberOfQuestions }}
             Past Simple form of the verb:
@@ -56,6 +62,10 @@
       <v-stepper-content step="3">
         <div v-if="step === 3">
           <h2>Your score: {{ score }}/{{ numberOfQuestions }}</h2>
+          <h3 class="text-right">
+            Quiz time:
+            {{ timer.hours }} : {{ timer.minutes }} : {{ timer.seconds }}
+          </h3>
           <v-simple-table class="my-2">
             <template #default>
               <thead>
@@ -86,7 +96,13 @@
 </template>
 
 <script>
+import StopwatchComponent from './StopwatchComponent'
+
 export default {
+  components: {
+    StopwatchComponent,
+  },
+
   props: {
     quizName: {
       type: String,
@@ -100,12 +116,18 @@ export default {
 
   data() {
     return {
+      shuffleMode: true,
       quizQuestions: [],
       numberOfQuestions: null,
       currentIndex: 0,
       currentAnswer: null,
       score: 0,
       step: 1,
+      timer: {
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+      },
     }
   },
 
@@ -122,9 +144,13 @@ export default {
         this.numberOfQuestions === 'All'
           ? this.quizAllQuestions.length
           : this.numberOfQuestions
-      this.quizQuestions = this.quizQuestions
-        .sort(() => Math.random() - Math.random())
-        .slice(0, this.numberOfQuestions)
+      if (this.shuffleMode) {
+        this.quizQuestions = this.quizQuestions
+          .sort(() => Math.random() - Math.random())
+          .slice(0, this.numberOfQuestions)
+      } else {
+        this.quizQuestions = this.quizQuestions.slice(0, this.numberOfQuestions)
+      }
     },
 
     startQuiz() {
@@ -163,9 +189,14 @@ export default {
       this.step = 1
       this.currentIndex = 0
       this.quizQuestions = []
+      this.shuffleMode = true
       this.numberOfQuestions = null
       this.currentAnswer = null
       this.score = 0
+    },
+
+    onTimerChanged(timer) {
+      this.timer = timer
     },
   },
 }
