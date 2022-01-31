@@ -135,6 +135,10 @@ export default {
     numberOfQuestions() {
       this.initQuizQuestions()
     },
+
+    shuffleMode() {
+      this.initQuizQuestions()
+    },
   },
 
   methods: {
@@ -149,7 +153,9 @@ export default {
           .sort(() => Math.random() - Math.random())
           .slice(0, this.numberOfQuestions)
       } else {
-        this.quizQuestions = this.quizQuestions.slice(0, this.numberOfQuestions)
+        this.quizQuestions = this.quizQuestions
+          .sort((a, b) => a.infinitive.localeCompare(b.infinitive))
+          .slice(0, this.numberOfQuestions)
       }
     },
 
