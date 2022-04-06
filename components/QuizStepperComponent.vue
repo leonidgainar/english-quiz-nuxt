@@ -40,11 +40,14 @@
         <div v-if="step === 2">
           <StopwatchComponent @timer-changed="onTimerChanged" />
           <h2>
-            {{ currentIndex + 1 }}/{{ numberOfQuestions }}
-            Past Simple form of the verb:
+            {{ currentIndex + 1 }}/{{ numberOfQuestions }} {{ quizName }} form
+            of the verb:
           </h2>
           <h2 class="pt-5">
-            {{ quizQuestions[currentIndex].infinitive }}
+            {{
+              quizQuestions[currentIndex].infinitive ||
+              quizQuestions[currentIndex].translation
+            }}
           </h2>
           <v-form @submit.prevent="nextQuestion">
             <v-text-field
@@ -77,7 +80,7 @@
               </thead>
               <tbody>
                 <tr v-for="verb in quizQuestions" :key="verb.infinitive">
-                  <td>{{ verb.infinitive }}</td>
+                  <td>{{ verb.infinitive || verb.translation }}</td>
                   <td>{{ verb.correctAnswer }}</td>
                   <td :class="verb.isCorrect ? 'green--text' : 'red--text'">
                     {{ verb.yourAnswer }}
@@ -131,6 +134,12 @@ export default {
     }
   },
 
+  computed: {
+    quizId() {
+      return this.$route.params.id
+    },
+  },
+
   watch: {
     numberOfQuestions() {
       this.initQuizQuestions()
@@ -151,6 +160,10 @@ export default {
       if (this.shuffleMode) {
         this.quizQuestions = this.quizQuestions
           .sort(() => Math.random() - Math.random())
+          .slice(0, this.numberOfQuestions)
+      } else if (this.quizId === '3') {
+        this.quizQuestions = this.quizQuestions
+          .sort((a, b) => a.translation.localeCompare(b.translation))
           .slice(0, this.numberOfQuestions)
       } else {
         this.quizQuestions = this.quizQuestions

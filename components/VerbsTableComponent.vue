@@ -36,9 +36,9 @@ export default {
           align: 'start',
           value: 'infinitive',
         },
-        { text: 'Translation', value: 'translation', sortable: false },
         { text: 'Past simple', value: 'pastSimple' },
         { text: 'Past participle', value: 'pastParticiple' },
+        { text: 'Translation (RO)', value: 'translation' },
       ],
       items: irregularVerbs,
     }

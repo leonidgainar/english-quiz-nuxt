@@ -37,6 +37,9 @@ export default {
       if (this.id === '2') {
         quizName = 'Past Participle'
       }
+      if (this.id === '3') {
+        quizName = 'Translate Infinitive'
+      }
       return quizName
     },
 
@@ -55,6 +58,14 @@ export default {
           return {
             infinitive,
             correctAnswer: pastParticiple,
+          }
+        })
+      }
+      if (this.id === '3') {
+        verbs = irregularVerbs.map(({ infinitive, translation }) => {
+          return {
+            translation,
+            correctAnswer: infinitive,
           }
         })
       }

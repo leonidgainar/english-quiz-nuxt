@@ -55,6 +55,11 @@ export default {
           title: 'Past participle quiz',
           to: '/quiz/2',
         },
+        {
+          icon: 'mdi-translate',
+          title: 'Translate (RO -> EN)',
+          to: '/quiz/3',
+        },
       ],
       title: 'Vuetify.js',
     }
