@@ -38,7 +38,10 @@ export default {
         quizName = 'Past Participle'
       }
       if (this.id === '3') {
-        quizName = 'Translate Infinitive'
+        quizName = 'Translate RO -> EN'
+      }
+      if (this.id === '4') {
+        quizName = 'Translate EN -> RO'
       }
       return quizName
     },
@@ -65,7 +68,15 @@ export default {
         verbs = irregularVerbs.map(({ infinitive, translation }) => {
           return {
             translation,
-            correctAnswer: infinitive,
+            correctAnswer: "to " + infinitive,
+          }
+        })
+      }
+      if (this.id === '4') {
+        verbs = irregularVerbs.map(({ infinitive, translation }) => {
+          return {
+            infinitive: "to " + infinitive,
+            correctAnswer: translation,
           }
         })
       }

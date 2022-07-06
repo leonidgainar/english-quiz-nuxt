@@ -60,6 +60,11 @@ export default {
           title: 'Translate (RO -> EN)',
           to: '/quiz/3',
         },
+        {
+          icon: 'mdi-translate',
+          title: 'Translate (EN -> RO)',
+          to: '/quiz/4',
+        },
       ],
       title: 'Vuetify.js',
     }
