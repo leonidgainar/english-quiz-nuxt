@@ -151,6 +151,19 @@ export default {
   },
 
   methods: {
+    replaceSpecialCharacters(inputString) {
+      const replacements = {
+        ț: 't',
+        ă: 'a',
+        ș: 's',
+        î: 'i',
+        â: 'a',
+      }
+
+      const pattern = new RegExp(Object.keys(replacements).join('|'), 'g')
+      return inputString ? inputString.trim().replace(pattern, (match) => replacements[match]) : ''
+    },
+
     initQuizQuestions() {
       this.quizQuestions = this.quizAllQuestions
       this.numberOfQuestions =
@@ -191,9 +204,10 @@ export default {
     calculateScore() {
       const correctAnswers =
         this.quizQuestions[this.currentIndex].correctAnswer.split('/')
+
       if (
-        correctAnswers[0] === this.currentAnswer ||
-        correctAnswers[1] === this.currentAnswer ||
+        this.replaceSpecialCharacters(correctAnswers[0]) === this.replaceSpecialCharacters(this.currentAnswer) ||
+        this.replaceSpecialCharacters(correctAnswers[1]) === this.replaceSpecialCharacters(this.currentAnswer) ||
         this.quizQuestions[this.currentIndex].correctAnswer ===
           this.currentAnswer
       ) {
