@@ -161,7 +161,9 @@ export default {
       }
 
       const pattern = new RegExp(Object.keys(replacements).join('|'), 'g')
-      return inputString ? inputString.trim().replace(pattern, (match) => replacements[match]) : ''
+      return inputString
+        ? inputString.trim().replace(pattern, (match) => replacements[match])
+        : ''
     },
 
     initQuizQuestions() {
@@ -206,8 +208,10 @@ export default {
         this.quizQuestions[this.currentIndex].correctAnswer.split('/')
 
       if (
-        this.replaceSpecialCharacters(correctAnswers[0]) === this.replaceSpecialCharacters(this.currentAnswer) ||
-        this.replaceSpecialCharacters(correctAnswers[1]) === this.replaceSpecialCharacters(this.currentAnswer) ||
+        this.replaceSpecialCharacters(correctAnswers[0]) ===
+          this.replaceSpecialCharacters(this.currentAnswer) ||
+        this.replaceSpecialCharacters(correctAnswers[1]) ===
+          this.replaceSpecialCharacters(this.currentAnswer) ||
         this.quizQuestions[this.currentIndex].correctAnswer ===
           this.currentAnswer
       ) {

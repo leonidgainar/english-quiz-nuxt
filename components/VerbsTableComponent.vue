@@ -15,7 +15,13 @@
         :items-per-page="10"
         :footer-props="footerProps"
         class="elevation-1"
-      ></v-data-table>
+      >
+        <template #[`item.actions`]="{ item }">
+          <v-icon class="mr-2" @click="speechText(item)">
+            mdi-volume-high
+          </v-icon>
+        </template>
+      </v-data-table>
     </v-card-title>
   </v-card>
 </template>
@@ -39,9 +45,28 @@ export default {
         { text: 'Past simple', value: 'pastSimple' },
         { text: 'Past participle', value: 'pastParticiple' },
         { text: 'Translation (RO)', value: 'translation' },
+        { text: 'Speech', value: 'actions' },
       ],
       items: irregularVerbs,
     }
+  },
+
+  methods: {
+    speechText(item) {
+      const textToSpeech = `${item.infinitive}, ${item.pastSimple.split(
+        '/'
+      )}, ${item.pastParticiple}`
+      // Create a new SpeechSynthesisUtterance object
+      const utterance = new SpeechSynthesisUtterance(textToSpeech)
+
+      // Filter all en-US or en-GB voices and use the first one as speech synthesis voice
+      const voices = window.speechSynthesis.getVoices()
+      utterance.voice = voices.filter(
+        (voice) => voice.lang === 'en-US' || voice.lang === 'en-GB'
+      )[0]
+      // Speak the text
+      window.speechSynthesis.speak(utterance)
+    },
   },
 }
 </script>

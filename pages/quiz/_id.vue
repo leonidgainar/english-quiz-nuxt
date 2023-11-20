@@ -68,14 +68,14 @@ export default {
         verbs = irregularVerbs.map(({ infinitive, translation }) => {
           return {
             translation,
-            correctAnswer: "to " + infinitive,
+            correctAnswer: 'to ' + infinitive,
           }
         })
       }
       if (this.id === '4') {
         verbs = irregularVerbs.map(({ infinitive, translation }) => {
           return {
-            infinitive: "to " + infinitive,
+            infinitive: 'to ' + infinitive,
             correctAnswer: translation,
           }
         })
