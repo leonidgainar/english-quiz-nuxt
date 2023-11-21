@@ -58,14 +58,18 @@ export default {
       )}, ${item.pastParticiple}`
       // Create a new SpeechSynthesisUtterance object
       const utterance = new SpeechSynthesisUtterance(textToSpeech)
-
-      // Filter all en-US voices and use the first one as speech synthesis voice
-      const voices = window.speechSynthesis.getVoices()
-      utterance.voice = voices.filter(
-        (voice) => voice.lang === 'en-US'
-      )[0]
-      // Speak the text
-      window.speechSynthesis.speak(utterance)
+      
+      if ('speechSynthesis' in window) {
+        const voices = window.speechSynthesis.getVoices()
+        // Filter all en-US or en-GB voices and use the first one as speech synthesis voice
+        utterance.voice = voices.filter(
+          (voice) => voice.lang === 'en-US' || voice.lang === 'en-GB'
+        )[0]
+        // Speak the text
+        window.speechSynthesis.speak(utterance)
+      } else {
+        alert('Your browser does not support speech synthesis.')
+      }
     },
   },
 }
