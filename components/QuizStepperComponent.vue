@@ -142,7 +142,6 @@ export default {
         'Speech Past Participle form(s):',
       ],
       recognition: null,
-      transcription: null,
       isRecognitionStarted: false,
       shuffleMode: true,
       quizQuestions: [],
@@ -183,6 +182,8 @@ export default {
 
       this.recognition = new SpeechRecognition()
       this.recognition.lang = 'en-US'
+      this.recognition.continous = false
+
       // Add event listeners
       this.recognition.addEventListener('start', this.handleRecognitionStart)
       this.recognition.addEventListener('end', this.handleRecognitionEnd)
@@ -294,7 +295,10 @@ export default {
 
     handleRecognitionResult(event) {
       const result = event.results[0][0].transcript
-      this.transcription = result
+      this.currentAnswer = result
+      if (this.currentAnswer) {
+        this.stopRecognition()
+      }
     },
 
     startRecognition() {
@@ -308,12 +312,9 @@ export default {
       if (this.recognition) {
         this.isRecognitionStarted = false
         this.recognition.stop()
-        this.currentAnswer = this.transcription
-        if (this.currentAnswer) {
-          setTimeout(() => {
-            this.nextQuestion()
-          }, 250)
-        }
+        setTimeout(() => {
+          this.nextQuestion()
+        }, 500)
       }
     },
   },
