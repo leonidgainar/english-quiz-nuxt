@@ -21,8 +21,29 @@
             :items="[5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 'All']"
             label="Select number of questions"
           ></v-select>
-          <v-switch v-model="shuffleMode" label="Shuffle mode"></v-switch>
+          <v-row>
+            <v-col class="col-12 col-md-6 py-0">
+              <v-switch v-model="shuffleMode" label="Shuffle mode"></v-switch>
+            </v-col>
+            <v-col v-if="quizRequiresMicrophone" class="col-12 col-md-6 py-0">
+              <v-switch
+                v-model="isMicrophoneEnabled"
+                label="Enable microphone"
+              ></v-switch>
+            </v-col>
+          </v-row>
           <v-btn
+            v-if="quizRequiresMicrophone"
+            class="mt-10"
+            color="primary"
+            :disabled="shouldDisableButton"
+            @click="startQuiz"
+          >
+            Start quiz
+          </v-btn>
+          <v-btn
+            v-else
+            class="mt-10"
             color="primary"
             :disabled="!numberOfQuestions"
             @click="startQuiz"
@@ -46,17 +67,7 @@
           <h2 class="pt-5">
             {{ quizQuestions[currentIndex].question }}
           </h2>
-          <v-form v-if="quizId < 5" @submit.prevent="nextQuestion">
-            <v-text-field
-              v-model="currentAnswer"
-              label="Your answer"
-              placeholder="Type your answer"
-            ></v-text-field>
-            <v-btn color="primary" :disabled="!currentAnswer" type="submit">
-              Next question
-            </v-btn>
-          </v-form>
-          <v-row v-else>
+          <v-row v-if="quizRequiresMicrophone">
             <v-col class="col-10">
               <v-text-field
                 v-model="currentAnswer"
@@ -69,9 +80,19 @@
               <v-icon v-if="!isRecognitionStarted" @click="startRecognition"
                 >mdi-microphone</v-icon
               >
-              <v-icon v-else @click="stopRecognition">mdi-stop-circle</v-icon>
+              <v-icon v-else @click="endRecognition">mdi-stop-circle</v-icon>
             </v-col>
           </v-row>
+          <v-form v-else @submit.prevent="nextQuestion">
+            <v-text-field
+              v-model="currentAnswer"
+              label="Your answer"
+              placeholder="Type your answer"
+            ></v-text-field>
+            <v-btn color="primary" :disabled="!currentAnswer" type="submit">
+              Next question
+            </v-btn>
+          </v-form>
         </div>
       </v-stepper-content>
 
@@ -124,6 +145,10 @@ export default {
       type: String,
       required: true,
     },
+    quizRequiresMicrophone: {
+      type: Boolean,
+      default: false,
+    },
     quizAllQuestions: {
       type: Array,
       required: true,
@@ -142,6 +167,7 @@ export default {
         'Speech Past Participle form(s):',
       ],
       recognition: null,
+      isMicrophoneEnabled: false,
       isRecognitionStarted: false,
       shuffleMode: true,
       quizQuestions: [],
@@ -161,6 +187,12 @@ export default {
   computed: {
     quizId() {
       return this.$route.params.id
+    },
+    shouldDisableButton() {
+      return (
+        this.quizRequiresMicrophone &&
+        (!this.numberOfQuestions || !this.isMicrophoneEnabled)
+      )
     },
   },
 
@@ -182,7 +214,7 @@ export default {
 
       this.recognition = new SpeechRecognition()
       this.recognition.lang = 'en-US'
-      this.recognition.continous = false
+      this.recognition.continuous = true
 
       // Add event listeners
       this.recognition.addEventListener('start', this.handleRecognitionStart)
@@ -195,9 +227,7 @@ export default {
 
   beforeDestroy() {
     // Remove event listeners
-    this.recognition.removeEventListener('start', this.handleRecognitionStart)
-    this.recognition.removeEventListener('end', this.handleRecognitionEnd)
-    this.recognition.removeEventListener('result', this.handleRecognitionResult)
+    this.cleanupRecognitionEventListeners()
   },
 
   methods: {
@@ -214,6 +244,21 @@ export default {
       return inputString
         ? inputString.trim().replace(pattern, (match) => replacements[match])
         : ''
+    },
+
+    cleanupRecognitionEventListeners() {
+      if (this.recognition) {
+        this.recognition.removeEventListener(
+          'start',
+          this.handleRecognitionStart
+        )
+        this.recognition.removeEventListener('end', this.handleRecognitionEnd)
+        this.recognition.removeEventListener(
+          'result',
+          this.handleRecognitionResult
+        )
+        this.handleRecognitionEnd()
+      }
     },
 
     initQuizQuestions() {
@@ -235,17 +280,30 @@ export default {
 
     startQuiz() {
       this.step = 2
+      if (this.quizRequiresMicrophone && this.isMicrophoneEnabled) {
+        this.startRecognition()
+      }
     },
 
     nextQuestion() {
-      this.currentAnswer = this.currentAnswer.toLowerCase()
-      this.quizQuestions[this.currentIndex].yourAnswer = this.currentAnswer
-      this.calculateScore()
-      if (this.currentIndex < this.quizQuestions.length - 1) {
-        this.currentAnswer = null
-        this.currentIndex++
-      } else {
-        this.step = 3
+      if (this.quizRequiresMicrophone && this.isMicrophoneEnabled) {
+        this.startRecognition()
+      }
+      if (this.currentAnswer) {
+        this.currentAnswer = this.currentAnswer.toLowerCase()
+
+        this.quizQuestions[this.currentIndex].yourAnswer = this.currentAnswer
+        this.calculateScore()
+        if (this.currentIndex < this.quizQuestions.length - 1) {
+          this.currentAnswer = null
+          this.currentIndex++
+        } else {
+          this.step = 3
+          if (this.quizRequiresMicrophone && this.isMicrophoneEnabled) {
+            this.isMicrophoneEnabled = false
+            this.endRecognition()
+          }
+        }
       }
     },
 
@@ -271,20 +329,25 @@ export default {
     startNewQuiz() {
       this.step = 1
       this.currentIndex = 0
+      this.score = 0
       this.quizQuestions = []
       this.shuffleMode = true
       this.numberOfQuestions = null
       this.currentAnswer = null
-      this.score = 0
+      if (this.quizRequiresMicrophone && this.isMicrophoneEnabled) {
+        this.startRecognition()
+      }
     },
 
     onTimerChanged(timer) {
       this.timer = timer
     },
 
-    handleRecognitionStart(){
+    handleRecognitionStart() {
       /* eslint-disable-next-line */
-      console.log("Your browser supports speech recognition. Please enable it in your browser settings.")
+      console.log(
+        'Your browser supports speech recognition. Please enable it in your browser settings.'
+      )
     },
 
     handleRecognitionEnd() {
@@ -295,26 +358,28 @@ export default {
 
     handleRecognitionResult(event) {
       const result = event.results[0][0].transcript
-      this.currentAnswer = result
-      if (this.currentAnswer) {
-        this.stopRecognition()
+      if (result) {
+        this.currentAnswer = result
+        this.endRecognition()
       }
     },
 
     startRecognition() {
-      if (this.recognition) {
+      if (this.recognition && !this.isRecognitionStarted) {
         this.isRecognitionStarted = true
         this.recognition.start()
       }
     },
 
-    stopRecognition() {
-      if (this.recognition) {
+    endRecognition() {
+      if (this.recognition && this.isRecognitionStarted) {
         this.isRecognitionStarted = false
         this.recognition.stop()
-        setTimeout(() => {
-          this.nextQuestion()
-        }, 500)
+        if (this.currentAnswer && this.step === 2) {
+          setTimeout(() => {
+            this.nextQuestion()
+          }, 500)
+        }
       }
     },
   },

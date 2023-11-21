@@ -3,6 +3,7 @@
     <v-col cols="12" sm="10" md="8" lg="6" xl="5">
       <QuizStepperComponent
         :quiz-name="quizName"
+        :quiz-requires-microphone="quizRequiresMicrophone"
         :quiz-all-questions="quizAllQuestions"
       />
     </v-col>
@@ -30,29 +31,35 @@ export default {
     },
 
     quizName() {
-      let quizName = null
-      if (this.id === '1') {
-        quizName = 'Past Simple'
+      switch (this.id) {
+        case '1':
+          return 'Past Simple'
+        case '2':
+          return 'Past Participle'
+        case '3':
+          return 'Translate RO -> EN'
+        case '4':
+          return 'Translate EN -> RO'
+        case '5':
+          return 'Speech Infinitive'
+        case '6':
+          return 'Speech Past Simple'
+        case '7':
+          return 'Speech Past Participle'
+        default:
+          return 'Unknown quiz'
       }
-      if (this.id === '2') {
-        quizName = 'Past Participle'
+    },
+
+    quizRequiresMicrophone() {
+      switch (this.id) {
+        case '5':
+        case '6':
+        case '7':
+          return true
+        default:
+          return false
       }
-      if (this.id === '3') {
-        quizName = 'Translate RO -> EN'
-      }
-      if (this.id === '4') {
-        quizName = 'Translate EN -> RO'
-      }
-      if (this.id === '5') {
-        quizName = 'Speech Infinitive'
-      }
-      if (this.id === '6') {
-        quizName = 'Speech Past Simple'
-      }
-      if (this.id === '7') {
-        quizName = 'Speech Past Participle'
-      }
-      return quizName
     },
 
     quizAllQuestions() {
