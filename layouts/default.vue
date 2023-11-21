@@ -66,6 +66,21 @@ export default {
           title: 'Translate (EN -> RO)',
           to: '/quiz/4',
         },
+        {
+          icon: 'mdi-volume-high',
+          title: 'Speech infinitive',
+          to: '/quiz/5',
+        },
+        {
+          icon: 'mdi-volume-high',
+          title: 'Speech past simple',
+          to: '/quiz/6',
+        },
+        {
+          icon: 'mdi-volume-high',
+          title: 'Speech past participle',
+          to: '/quiz/7',
+        },
       ],
       title: 'Vuetify.js',
     }

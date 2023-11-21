@@ -40,16 +40,13 @@
         <div v-if="step === 2">
           <StopwatchComponent @timer-changed="onTimerChanged" />
           <h2>
-            {{ currentIndex + 1 }}/{{ numberOfQuestions }} {{ quizName }} form
-            of the verb:
+            {{ currentIndex + 1 }}/{{ numberOfQuestions }}
+            {{ quizNames[quizId - 1] }}
           </h2>
           <h2 class="pt-5">
-            {{
-              quizQuestions[currentIndex].infinitive ||
-              quizQuestions[currentIndex].translation
-            }}
+            {{ quizQuestions[currentIndex].question }}
           </h2>
-          <v-form @submit.prevent="nextQuestion">
+          <v-form v-if="quizId < 5" @submit.prevent="nextQuestion">
             <v-text-field
               v-model="currentAnswer"
               label="Your answer"
@@ -59,6 +56,22 @@
               Next question
             </v-btn>
           </v-form>
+          <v-row v-else>
+            <v-col class="col-10">
+              <v-text-field
+                v-model="currentAnswer"
+                label="Your answer"
+                placeholder="Speech your answer"
+                readonly
+              ></v-text-field>
+            </v-col>
+            <v-col class="col-2 mt-5">
+              <v-icon v-if="!isRecognitionStarted" @click="startRecognition"
+                >mdi-microphone</v-icon
+              >
+              <v-icon v-else @click="stopRecognition">mdi-stop-circle</v-icon>
+            </v-col>
+          </v-row>
         </div>
       </v-stepper-content>
 
@@ -79,8 +92,8 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="verb in quizQuestions" :key="verb.infinitive">
-                  <td>{{ verb.infinitive || verb.translation }}</td>
+                <tr v-for="verb in quizQuestions" :key="verb.question">
+                  <td>{{ verb.question }}</td>
                   <td>{{ verb.correctAnswer }}</td>
                   <td :class="verb.isCorrect ? 'green--text' : 'red--text'">
                     {{ verb.yourAnswer }}
@@ -119,6 +132,18 @@ export default {
 
   data() {
     return {
+      quizNames: [
+        'Past Simple form of the verb:',
+        'Past Participle form of the verb:',
+        'Translate in EN the Infinitive of the verb:',
+        'Translate in RO the Infinitive of the verb:',
+        'Speech Infinitive form:',
+        'Speech Past Simple form(s):',
+        'Speech Past Participle form(s):',
+      ],
+      recognition: null,
+      transcription: null,
+      isRecognitionStarted: false,
       shuffleMode: true,
       quizQuestions: [],
       numberOfQuestions: null,
@@ -150,6 +175,30 @@ export default {
     },
   },
 
+  mounted() {
+    // Create a new instance of SpeechRecognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition
+
+      this.recognition = new SpeechRecognition()
+      this.recognition.lang = 'en-US'
+      // Add event listeners
+      this.recognition.addEventListener('start', this.handleRecognitionStart)
+      this.recognition.addEventListener('end', this.handleRecognitionEnd)
+      this.recognition.addEventListener('result', this.handleRecognitionResult)
+    } else {
+      alert('Speech recognition not supported 😢')
+    }
+  },
+
+  beforeDestroy() {
+    // Remove event listeners
+    this.recognition.removeEventListener('start', this.handleRecognitionStart)
+    this.recognition.removeEventListener('end', this.handleRecognitionEnd)
+    this.recognition.removeEventListener('result', this.handleRecognitionResult)
+  },
+
   methods: {
     replaceSpecialCharacters(inputString) {
       const replacements = {
@@ -175,10 +224,6 @@ export default {
       if (this.shuffleMode) {
         this.quizQuestions = this.quizQuestions
           .sort(() => Math.random() - Math.random())
-          .slice(0, this.numberOfQuestions)
-      } else if (this.quizId === '3') {
-        this.quizQuestions = this.quizQuestions
-          .sort((a, b) => a.translation.localeCompare(b.translation))
           .slice(0, this.numberOfQuestions)
       } else {
         this.quizQuestions = this.quizQuestions
@@ -234,6 +279,42 @@ export default {
 
     onTimerChanged(timer) {
       this.timer = timer
+    },
+
+    handleRecognitionStart(){
+      /* eslint-disable-next-line */
+      console.log("Your browser supports speech recognition. Please enable it in your browser settings.")
+    },
+
+    handleRecognitionEnd() {
+      if (this.recognition) {
+        this.recognition.stop()
+      }
+    },
+
+    handleRecognitionResult(event) {
+      const result = event.results[0][0].transcript
+      this.transcription = result
+    },
+
+    startRecognition() {
+      if (this.recognition) {
+        this.isRecognitionStarted = true
+        this.recognition.start()
+      }
+    },
+
+    stopRecognition() {
+      if (this.recognition) {
+        this.isRecognitionStarted = false
+        this.recognition.stop()
+        this.currentAnswer = this.transcription
+        if (this.currentAnswer) {
+          setTimeout(() => {
+            this.nextQuestion()
+          }, 250)
+        }
+      }
     },
   },
 }

@@ -43,6 +43,15 @@ export default {
       if (this.id === '4') {
         quizName = 'Translate EN -> RO'
       }
+      if (this.id === '5') {
+        quizName = 'Speech Infinitive'
+      }
+      if (this.id === '6') {
+        quizName = 'Speech Past Simple'
+      }
+      if (this.id === '7') {
+        quizName = 'Speech Past Participle'
+      }
       return quizName
     },
 
@@ -52,6 +61,7 @@ export default {
         verbs = irregularVerbs.map(({ infinitive, pastSimple }) => {
           return {
             infinitive,
+            question: infinitive,
             correctAnswer: pastSimple,
           }
         })
@@ -60,6 +70,7 @@ export default {
         verbs = irregularVerbs.map(({ infinitive, pastParticiple }) => {
           return {
             infinitive,
+            question: infinitive,
             correctAnswer: pastParticiple,
           }
         })
@@ -67,7 +78,8 @@ export default {
       if (this.id === '3') {
         verbs = irregularVerbs.map(({ infinitive, translation }) => {
           return {
-            translation,
+            infinitive,
+            question: translation,
             correctAnswer: 'to ' + infinitive,
           }
         })
@@ -75,8 +87,36 @@ export default {
       if (this.id === '4') {
         verbs = irregularVerbs.map(({ infinitive, translation }) => {
           return {
-            infinitive: 'to ' + infinitive,
+            infinitive,
+            question: 'to ' + infinitive,
             correctAnswer: translation,
+          }
+        })
+      }
+      if (this.id === '5') {
+        verbs = irregularVerbs.map(({ infinitive }) => {
+          return {
+            infinitive,
+            question: infinitive,
+            correctAnswer: infinitive,
+          }
+        })
+      }
+      if (this.id === '6') {
+        verbs = irregularVerbs.map(({ infinitive, pastSimple }) => {
+          return {
+            infinitive,
+            question: `${pastSimple.split('/')}`,
+            correctAnswer: `${pastSimple.split('/')}`,
+          }
+        })
+      }
+      if (this.id === '7') {
+        verbs = irregularVerbs.map(({ infinitive, pastParticiple }) => {
+          return {
+            infinitive,
+            question: `${pastParticiple.split('/')}`,
+            correctAnswer: `${pastParticiple.split('/')}`,
           }
         })
       }
