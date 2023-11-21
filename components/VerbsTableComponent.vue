@@ -45,7 +45,7 @@ export default {
         { text: 'Past simple', value: 'pastSimple' },
         { text: 'Past participle', value: 'pastParticiple' },
         { text: 'Translation (RO)', value: 'translation' },
-        { text: 'Speech', value: 'actions' },
+        { text: 'Speech', value: 'actions', sortable: false },
       ],
       items: irregularVerbs,
     }
@@ -59,10 +59,10 @@ export default {
       // Create a new SpeechSynthesisUtterance object
       const utterance = new SpeechSynthesisUtterance(textToSpeech)
 
-      // Filter all en-US or en-GB voices and use the first one as speech synthesis voice
+      // Filter all en-US voices and use the first one as speech synthesis voice
       const voices = window.speechSynthesis.getVoices()
       utterance.voice = voices.filter(
-        (voice) => voice.lang === 'en-US' || voice.lang === 'en-GB'
+        (voice) => voice.lang === 'en-US'
       )[0]
       // Speak the text
       window.speechSynthesis.speak(utterance)
