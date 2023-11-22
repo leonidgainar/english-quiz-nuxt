@@ -280,49 +280,47 @@ export default {
 
     startQuiz() {
       this.step = 2
-      if (this.quizRequiresMicrophone && this.isMicrophoneEnabled) {
-        this.startRecognition()
-      }
+      this.startRecognitionIfRequiredAndEnabled()
     },
 
     nextQuestion() {
-      if (this.quizRequiresMicrophone && this.isMicrophoneEnabled) {
-        this.startRecognition()
-      }
-      if (this.currentAnswer) {
-        this.currentAnswer = this.currentAnswer.toLowerCase()
+      this.startRecognitionIfRequiredAndEnabled()
 
-        this.quizQuestions[this.currentIndex].yourAnswer = this.currentAnswer
-        this.calculateScore()
-        if (this.currentIndex < this.quizQuestions.length - 1) {
-          this.currentAnswer = null
-          this.currentIndex++
-        } else {
-          this.step = 3
-          if (this.quizRequiresMicrophone && this.isMicrophoneEnabled) {
-            this.isMicrophoneEnabled = false
-            this.endRecognition()
-          }
-        }
+      if (!this.currentAnswer) {
+        return // Exit early if currentAnswer is not set
+      }
+
+      this.currentAnswer = this.currentAnswer.toLowerCase()
+
+      const currentQuestion = this.quizQuestions[this.currentIndex]
+      currentQuestion.yourAnswer = this.currentAnswer
+      this.calculateScore()
+
+      if (this.currentIndex < this.quizQuestions.length - 1) {
+        this.currentAnswer = null
+        this.currentIndex++
+      } else {
+        this.step = 3
+        this.endRecognitionIfRequiredAndEnabled()
       }
     },
 
     calculateScore() {
-      const correctAnswers =
-        this.quizQuestions[this.currentIndex].correctAnswer.split('/')
+      const currentQuestion = this.quizQuestions[this.currentIndex]
+      const correctAnswers = currentQuestion.correctAnswer.split('/')
+      const normalizedCurrentAnswer = this.replaceSpecialCharacters(
+        this.currentAnswer
+      )
 
-      if (
-        this.replaceSpecialCharacters(correctAnswers[0]) ===
-          this.replaceSpecialCharacters(this.currentAnswer) ||
-        this.replaceSpecialCharacters(correctAnswers[1]) ===
-          this.replaceSpecialCharacters(this.currentAnswer) ||
-        this.quizQuestions[this.currentIndex].correctAnswer ===
-          this.currentAnswer
-      ) {
-        this.quizQuestions[this.currentIndex].isCorrect = true
+      const isAnswerCorrect = correctAnswers.some(
+        (answer) =>
+          this.replaceSpecialCharacters(answer) === normalizedCurrentAnswer
+      )
+
+      currentQuestion.isCorrect = isAnswerCorrect
+
+      if (isAnswerCorrect) {
         this.score++
-      } else {
-        this.quizQuestions[this.currentIndex].isCorrect = false
       }
     },
 
@@ -332,11 +330,10 @@ export default {
       this.score = 0
       this.quizQuestions = []
       this.shuffleMode = true
+      this.isMicrophoneEnabled = false
       this.numberOfQuestions = null
       this.currentAnswer = null
-      if (this.quizRequiresMicrophone && this.isMicrophoneEnabled) {
-        this.startRecognition()
-      }
+      this.startRecognitionIfRequiredAndEnabled()
     },
 
     onTimerChanged(timer) {
@@ -360,6 +357,18 @@ export default {
       const result = event.results[0][0].transcript
       if (result) {
         this.currentAnswer = result
+        this.endRecognition()
+      }
+    },
+
+    startRecognitionIfRequiredAndEnabled() {
+      if (this.quizRequiresMicrophone && this.isMicrophoneEnabled) {
+        this.startRecognition()
+      }
+    },
+
+    endRecognitionIfRequiredAndEnabled() {
+      if (this.quizRequiresMicrophone && this.isMicrophoneEnabled) {
         this.endRecognition()
       }
     },
