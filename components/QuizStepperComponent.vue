@@ -59,7 +59,7 @@
 
       <v-stepper-content step="2">
         <div v-if="step === 2">
-          <StopwatchComponent @timer-changed="onTimerChanged" />
+          <StopwatchComponent :is-quiz-running="isQuizRunning" @timer-changed="onTimerChanged" />
           <h2>
             {{ currentIndex + 1 }}/{{ numberOfQuestions }}
             {{ quizNames[quizId - 1] }}
@@ -176,6 +176,7 @@ export default {
       currentAnswer: null,
       score: 0,
       step: 1,
+      isQuizRunning: true,
       timer: {
         hours: 0,
         minutes: 0,
@@ -345,10 +346,12 @@ export default {
       console.log(
         'Your browser supports speech recognition. Please enable it in your browser settings.'
       )
+      this.isQuizRunning = true
     },
 
     handleRecognitionEnd() {
       if (this.recognition) {
+        this.isQuizRunning = false
         this.recognition.stop()
       }
     },

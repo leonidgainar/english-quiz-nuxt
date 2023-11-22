@@ -6,6 +6,13 @@
 
 <script>
 export default {
+  props: {
+    isQuizRunning: {
+      type: Boolean,
+      default: true,
+    },
+  },
+
   data() {
     return {
       hour: 0,
@@ -45,6 +52,9 @@ export default {
 
   methods: {
     incrementTimer() {
+      if (!this.isQuizRunning) {
+        return
+      }
       this.ms += 10
       if (this.ms === 1000) {
         this.ms = 0
