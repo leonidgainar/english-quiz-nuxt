@@ -27,8 +27,8 @@
             </v-col>
             <v-col v-if="quizRequiresMicrophone" class="col-12 col-md-6 py-0">
               <v-switch
-                v-model="isMicrophoneEnabled"
-                label="Enable microphone"
+                v-model="isMicrophoneAllowed"
+                label="Allow microphone"
               ></v-switch>
             </v-col>
           </v-row>
@@ -77,10 +77,12 @@
               ></v-text-field>
             </v-col>
             <v-col class="col-2 mt-5">
-              <v-icon v-if="!isRecognitionStarted" @click="startRecognition"
-                >mdi-microphone</v-icon
-              >
-              <v-icon v-else @click="endRecognition">mdi-stop-circle</v-icon>
+              <v-icon v-if="!isRecognitionStarted" @click="startRecognition">
+                mdi-microphone
+              </v-icon>
+              <v-icon v-else @click="endRecognition">
+                mdi-stop-circle
+              </v-icon>
             </v-col>
           </v-row>
           <v-form v-else @submit.prevent="nextQuestion">
@@ -167,7 +169,7 @@ export default {
         'Speech Past Participle form(s):',
       ],
       recognition: null,
-      isMicrophoneEnabled: false,
+      isMicrophoneAllowed: false,
       isRecognitionStarted: false,
       shuffleMode: true,
       quizQuestions: [],
@@ -192,7 +194,7 @@ export default {
     shouldDisableButton() {
       return (
         this.quizRequiresMicrophone &&
-        (!this.numberOfQuestions || !this.isMicrophoneEnabled)
+        (!this.numberOfQuestions || !this.isMicrophoneAllowed)
       )
     },
   },
@@ -205,6 +207,12 @@ export default {
     shuffleMode() {
       this.initQuizQuestions()
     },
+  
+    isMicrophoneAllowed() {
+      if (this.isMicrophoneAllowed) {
+        this.requestMicrophoneAccess()
+      }
+    }
   },
 
   mounted() {
@@ -245,21 +253,6 @@ export default {
       return inputString
         ? inputString.trim().replace(pattern, (match) => replacements[match])
         : ''
-    },
-
-    cleanupRecognitionEventListeners() {
-      if (this.recognition) {
-        this.recognition.removeEventListener(
-          'start',
-          this.handleRecognitionStart
-        )
-        this.recognition.removeEventListener('end', this.handleRecognitionEnd)
-        this.recognition.removeEventListener(
-          'result',
-          this.handleRecognitionResult
-        )
-        this.handleRecognitionEnd()
-      }
     },
 
     initQuizQuestions() {
@@ -331,7 +324,7 @@ export default {
       this.score = 0
       this.quizQuestions = []
       this.shuffleMode = true
-      this.isMicrophoneEnabled = false
+      this.isMicrophoneAllowed = false
       this.numberOfQuestions = null
       this.currentAnswer = null
       this.startRecognitionIfRequiredAndEnabled()
@@ -339,6 +332,46 @@ export default {
 
     onTimerChanged(timer) {
       this.timer = timer
+    },
+
+    requestMicrophoneAccess() {
+      navigator.permissions.query({ name: 'microphone' })
+        .then(permissionStatus => {
+          if (permissionStatus.state === 'granted') {
+            // Microphone access already granted
+            this.isMicrophoneAllowed = true;
+          } else if (permissionStatus.state === 'denied') {
+            // Microphone access denied; instruct the user to enable it manually
+            alert('Microphone access is denied. Please enable it in your browser settings.');
+            this.isMicrophoneAllowed = false;
+          } else {
+            // Microphone access not determined; request permission
+            navigator.mediaDevices.getUserMedia({ audio: true })
+              .then(() => {
+                // Microphone access granted
+                this.isMicrophoneAllowed = true;
+              })
+              .catch(() => {
+                // Microphone access denied
+                this.isMicrophoneAllowed = false;
+              });
+          }
+        });
+    },
+
+    cleanupRecognitionEventListeners() {
+      if (this.recognition) {
+        this.recognition.removeEventListener(
+          'start',
+          this.handleRecognitionStart
+        )
+        this.recognition.removeEventListener('end', this.handleRecognitionEnd)
+        this.recognition.removeEventListener(
+          'result',
+          this.handleRecognitionResult
+        )
+        this.handleRecognitionEnd()
+      }
     },
 
     handleRecognitionStart() {
@@ -365,13 +398,13 @@ export default {
     },
 
     startRecognitionIfRequiredAndEnabled() {
-      if (this.quizRequiresMicrophone && this.isMicrophoneEnabled) {
+      if (this.quizRequiresMicrophone && this.isMicrophoneAllowed) {
         this.startRecognition()
       }
     },
 
     endRecognitionIfRequiredAndEnabled() {
-      if (this.quizRequiresMicrophone && this.isMicrophoneEnabled) {
+      if (this.quizRequiresMicrophone && this.isMicrophoneAllowed) {
         this.endRecognition()
       }
     },
