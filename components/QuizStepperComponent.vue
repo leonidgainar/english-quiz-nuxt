@@ -60,7 +60,10 @@
 
         <v-stepper-content step="2">
           <div v-if="step === 2">
-            <StopwatchComponent :is-quiz-running="isQuizRunning" @timer-changed="onTimerChanged" />
+            <StopwatchComponent
+              :is-quiz-running="isQuizRunning"
+              @timer-changed="onTimerChanged"
+            />
             <h2>
               {{ currentIndex + 1 }}/{{ numberOfQuestions }}
               {{ quizNames[quizId - 1] }}
@@ -133,7 +136,10 @@
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
-    <RequestMicrophoneAccessDialog :show-dialog="showMicrophoneAccessDialog" @close-dialog="showMicrophoneAccessDialog = false"/>
+    <RequestMicrophoneAccessDialog
+      :show-dialog="showMicrophoneAccessDialog"
+      @close-dialog="showMicrophoneAccessDialog = false"
+    />
   </div>
 </template>
 
@@ -177,6 +183,7 @@ export default {
       recognition: null,
       isMicrophoneAllowed: false,
       isRecognitionStarted: false,
+      mediaStream: null,
       shuffleMode: true,
       quizQuestions: [],
       numberOfQuestions: null,
@@ -213,30 +220,38 @@ export default {
     shuffleMode() {
       this.initQuizQuestions()
     },
-  
+
     isMicrophoneAllowed() {
-      if (this.isMicrophoneAllowed) {
+      if (this.quizRequiresMicrophone && this.isMicrophoneAllowed) {
         this.requestMicrophoneAccess()
       }
-    }
+    },
   },
 
   mounted() {
-    // Create a new instance of SpeechRecognition
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition =
-        window.SpeechRecognition || window.webkitSpeechRecognition
+    if (this.quizRequiresMicrophone) {
+      // Create a new instance of SpeechRecognition
+      if (
+        'webkitSpeechRecognition' in window ||
+        'SpeechRecognition' in window
+      ) {
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition
 
-      this.recognition = new SpeechRecognition()
-      this.recognition.lang = 'en-US'
-      this.recognition.continuous = true
+        this.recognition = new SpeechRecognition()
+        this.recognition.lang = 'en-US'
+        this.recognition.continuous = true
 
-      // Add event listeners
-      this.recognition.addEventListener('start', this.handleRecognitionStart)
-      this.recognition.addEventListener('end', this.handleRecognitionEnd)
-      this.recognition.addEventListener('result', this.handleRecognitionResult)
-    } else {
-      alert('Speech recognition not supported 😢')
+        // Add event listeners
+        this.recognition.addEventListener('start', this.handleRecognitionStart)
+        this.recognition.addEventListener('end', this.handleRecognitionEnd)
+        this.recognition.addEventListener(
+          'result',
+          this.handleRecognitionResult
+        )
+      } else {
+        alert('Speech recognition not supported 😢')
+      }
     }
   },
 
@@ -341,29 +356,31 @@ export default {
     },
 
     requestMicrophoneAccess() {
-      navigator.permissions.query({ name: 'microphone' })
-        .then(permissionStatus => {
+      navigator.permissions
+        .query({ name: 'microphone' })
+        .then((permissionStatus) => {
           if (permissionStatus.state === 'granted') {
             // Microphone access already granted
-            this.isMicrophoneAllowed = true;
+            this.isMicrophoneAllowed = true
           } else if (permissionStatus.state === 'denied') {
             // Microphone access denied; instruct the user to enable it manually
-            this.showMicrophoneAccessDialog = true;
-            this.isMicrophoneAllowed = false;
+            this.showMicrophoneAccessDialog = true
+            this.isMicrophoneAllowed = false
           } else {
             // Microphone access not determined; request permission
-            navigator.mediaDevices.getUserMedia({ audio: true })
+            navigator.mediaDevices
+              .getUserMedia({ audio: true })
               .then(() => {
                 // Microphone access granted
-                this.isMicrophoneAllowed = true;
+                this.isMicrophoneAllowed = true
               })
               .catch(() => {
                 // Microphone access denied
-                this.showMicrophoneAccessDialog = true;
-                this.isMicrophoneAllowed = false;
-              });
+                this.showMicrophoneAccessDialog = true
+                this.isMicrophoneAllowed = false
+              })
           }
-        });
+        })
     },
 
     cleanupRecognitionEventListeners() {
@@ -398,7 +415,7 @@ export default {
 
     handleRecognitionResult(event) {
       const result = event.results[0][0].transcript
-      if (result) {
+      if (result && this.step === 2) {
         this.currentAnswer = result
         this.endRecognition()
       }

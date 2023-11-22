@@ -113,8 +113,8 @@ export default {
         verbs = irregularVerbs.map(({ infinitive, pastSimple }) => {
           return {
             infinitive,
-            question: `${pastSimple.split('/')}`,
-            correctAnswer: `${pastSimple.split('/')}`,
+            question: pastSimple,
+            correctAnswer: pastSimple,
           }
         })
       }
@@ -122,8 +122,8 @@ export default {
         verbs = irregularVerbs.map(({ infinitive, pastParticiple }) => {
           return {
             infinitive,
-            question: `${pastParticiple.split('/')}`,
-            correctAnswer: `${pastParticiple.split('/')}`,
+            question: pastParticiple.split,
+            correctAnswer: pastParticiple.split,
           }
         })
       }
